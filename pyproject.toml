@@ -18,6 +18,7 @@ classifiers = [
 dependencies = [
     "appdirs>=1.4.4",
     "click>=8.1.7",
+    "mypy>=1.16.1",
     "pydantic>=2",
     "python-dotenv>=1.1.0",
     "rich>=14.0.0",

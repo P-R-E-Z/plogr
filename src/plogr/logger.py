@@ -3,7 +3,7 @@ import json
 import pathlib
 import os
 from pathlib import PosixPath
-from typing import Dict, Any, Optional, Iterator, cast, List
+from typing import Dict, Any, Optional, Iterator, Mapping, cast, List
 import logging
 import threading
 from contextlib import contextmanager
@@ -126,8 +126,9 @@ class PackageLogger:
 
         self._upsert_json_and_toml(event.to_dict())
 
-    def _upsert_json_and_toml(self, entry: Dict[str, Any]) -> None:
+    def _upsert_json_and_toml(self, entry: Mapping[str, Any]) -> None:
         """Upsert the JSON log, updating prior install on removal; then rewrite TOML from JSON."""
+        entry = dict(entry)
         try:
             with self._thread_lock:
                 with _file_lock(self.json_file):

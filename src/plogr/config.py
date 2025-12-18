@@ -2,7 +2,7 @@ import os
 import json
 import logging
 from pathlib import Path, PosixPath
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, cast
 
 # Do not rely on os.name for home resolution (tests patch os.name to 'nt').
 _ORIGINAL_HOME: Path = PosixPath(os.environ.get("HOME", "~")).expanduser()
@@ -46,9 +46,9 @@ class Config:
             "monitored_extensions": ".rpm, .deb, .pkg, .exe, .msi, .dmg",
         }
 
-        self._scope_cache = None
-        self._is_system_cache = None
-        self._is_user_cache = None
+        self._scope_cache: Optional[Scope] = None
+        self._is_system_cache: Optional[bool] = None
+        self._is_user_cache: Optional[bool] = None
 
         self._load_config()
         self._validate_scope()
@@ -173,7 +173,8 @@ class Config:
     def scope(self) -> Scope:
         """Get current scope"""
         if self._scope_cache is None:
-            self._scope_cache = self.settings.get("scope", "user")
+            value = self.settings.get("scope", "user")
+            self._scope_cache = cast(Scope, value)
         return self._scope_cache
 
     @property
@@ -181,14 +182,14 @@ class Config:
         """Check if current scope is system"""
         if self._is_system_cache is None:
             self._is_system_cache = self.scope == "system"
-        return self._is_system_cache
+        return bool(self._is_system_cache)
 
     @property
     def is_user_scope(self) -> bool:
         """Check if current scope is user"""
         if self._is_user_cache is None:
             self._is_user_cache = self.scope == "user"
-        return self._is_user_cache
+        return bool(self._is_user_cache)
 
     def __str__(self) -> str:
         """Human-readable representation of the configuration instance."""

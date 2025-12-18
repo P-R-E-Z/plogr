@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
 
 Scope = Literal["user", "system"]
 
@@ -13,9 +13,9 @@ class PkgEventDict(TypedDict):
     scope: Scope
     date: str
     removed: bool
-    version: str | None
-    metadata: dict[str, Any] | None
-    date_removed: str | None
+    version: NotRequired[str | None]
+    metadata: NotRequired[dict[str, Any] | None]
+    date_removed: NotRequired[str | None]
 
 
 @dataclass
