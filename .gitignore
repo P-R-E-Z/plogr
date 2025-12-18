@@ -57,3 +57,20 @@ libdnf5-plugin/dnf5-plugin/cmake_install.cmake
 *.pid
 *.pid.lock
 *.tmp
+sys
+re
+
+# RPM build artifacts
+*.rpm
+*.src.rpm
+*.spec
+*.tar.gz
+*.zip
+*.7z
+*.bz2
+*.gz
+*.xz
+*.tar
+
+# Mock build artifacts
+mock/

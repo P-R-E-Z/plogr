@@ -30,6 +30,7 @@ dependencies = [
 dev = [
     "black>=25.1.0",
     "build>=1.2.2.post1",
+    "wheel>=0.45.1",
     "bump2version>=1.0.1",
     "mypy>=1.16.1",
     "pre-commit>=4.2.0",

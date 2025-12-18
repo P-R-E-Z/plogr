@@ -12,7 +12,13 @@ Source0:    %{name}-%{version}.tar.gz
 # BuildArch:  noarch
 
 # Python packaging macros + dependencies for building libdnf5 plugin
+BuildRequires:  python3
 BuildRequires:  pyproject-rpm-macros
+BuildRequires:  python3dist(setuptools)
+BuildRequires:  python3dist(wheel)
+BuildRequires:  python3dist(packaging)
+BuildRequires:  python3dist(pip)
+BuildRequires:  python3-devel
 BuildRequires:  cmake gcc-c++ libdnf5-devel
 BuildRequires:  pkgconfig(libdnf5) pkgconfig(libdnf5-cli)
 ## Only need pytest for upstream development; the RPM check phase will just
@@ -29,6 +35,7 @@ Requires:  python3dist(toml)
 Requires:  python3dist(watchdog)
 Requires: libdnf5-plugin-actions
 
+%global __python3 /usr/bin/python3.13
 %global _pyproject_buildrequires_extra python-dnf python-watchdog python-appdirs python-rich python-click python-pydantic python-dotenv python-toml
 
 %description
@@ -45,7 +52,7 @@ package managers. This utility is designed to improve system package management.
 sed -i 's/^license = "MIT"/license = { text = "MIT" }/' pyproject.toml
 
 %build
-%pyproject_wheel
+PYTHON=%{__python3} %pyproject_wheel
 
 # Build the native dnf5 plugin (C++/libdnf5)
 %cmake -S libdnf5-plugin/dnf5-plugin
