@@ -30,6 +30,7 @@ htmlcov/
 .vscode/
 *.swp
 .cursor/
+prez-pkglog.code-workspace
 
 # System files
 .DS_Store
