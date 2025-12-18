@@ -6,12 +6,6 @@
 
 ---
 
-## **Use of AI on this project**
-
-I currently use AI to help me with scaffolding, research, debugging, and documentation. All other aspects of the code is done by me, keep in mind I do this for fun so keep your expectations low... lol.
-
----
-
 ## Table of Contents
 
 1. [Features](#features)
@@ -68,11 +62,13 @@ Package builds will soon be available from my Copr repository.  Until then:
 
 ```bash
 # system Python → isolated environment in ~/.local/pipx:
-pipx install plogr==0.5.3
+pipx install plogr==0.7.0
 
 # verify
 plogr --help
 ```
+
+Supported Python versions: 3.12–3.13 (3.14 is blocked until upstream PyO3/pydantic-core add support). If your system default is newer, set `UV_PYTHON=python3.13` when building or installing with `uv`/`pipx`.
 
 You can now enable the download-monitoring service:
 
@@ -549,3 +545,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute 
 MIT License (see LICENSE)
 
 ---
+
+## **Use of AI on this project**
+
+I currently use AI to help me with scaffolding, research, debugging, and documentation. All other aspects of the code is done by me, keep in mind I do this for fun so keep your expectations low... lol.

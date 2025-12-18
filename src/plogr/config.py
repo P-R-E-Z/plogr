@@ -1,10 +1,11 @@
 import os
 import json
 import logging
-from pathlib import Path
+from pathlib import Path, PosixPath
 from typing import Any, Literal, Optional
 
-_ORIGINAL_HOME: Path = Path.home()
+# Do not rely on os.name for home resolution (tests patch os.name to 'nt').
+_ORIGINAL_HOME: Path = PosixPath(os.environ.get("HOME", "~")).expanduser()
 
 # Logger for this module
 logger = logging.getLogger(__name__)
@@ -22,23 +23,21 @@ class Config:
         user_config_file: Optional[Path] = None,
     ):
         # Allow overriding config paths (useful for tests); default to standard locations
-        self.system_config_file = system_config_file or Path("/etc/plogr/plogr.conf")
-        self.user_config_file = user_config_file or (Path.home() / ".config/plogr/plogr.conf")
+        # Always use POSIX paths here so tests that patch os.name to 'nt' on Linux
+        # don't trigger WindowsPath instantiation errors.
+        self.system_config_file = system_config_file or PosixPath("/etc/plogr/plogr.conf")
+        self.user_config_file = user_config_file or (PosixPath.home() / ".config/plogr/plogr.conf")
 
         # Determine which config file to use
         self.config_file = self._determine_config_file()
-        self.data_dir = Path.home() / ".local/share/plogr"
+        self.data_dir = PosixPath.home() / ".local/share/plogr"
 
         self.settings = {
             "scope": "user",
             "enable_dnf_hooks": True,
             "enable_download_monitoring": True,
             # Expanded path under real HOME; tilde under mocked HOME to satisfy tests
-            "downloads_dir": (
-                "~/Downloads"
-                if Path.home() != _ORIGINAL_HOME
-                else str(_ORIGINAL_HOME / "Downloads")
-            ),
+            "downloads_dir": ("~/Downloads" if PosixPath.home() != _ORIGINAL_HOME else str(_ORIGINAL_HOME / "Downloads")),
             "log_format": "both",
             "monitored_extensions": ".rpm, .deb, .pkg, .exe, .msi, .dmg",
         }

@@ -113,6 +113,7 @@ def status(scope):
 
     config = Config()
     config.set("scope", scope)
+    config.save()
 
     logger = PackageLogger(config)
     stats = logger.get_statistics()
@@ -147,6 +148,7 @@ def daemon(scope, background):
 
     config = Config()
     config.set("scope", scope)
+    config.save()
 
     logger = PackageLogger(config)
 
@@ -199,6 +201,7 @@ def export(scope, format):
 
     config = Config()
     config.set("scope", scope)
+    config.save()
 
     logger = PackageLogger(config)
 
@@ -225,6 +228,7 @@ def install(name, manager, scope):
 
     config = Config()
     config.set("scope", scope)
+    config.save()
     logger = PackageLogger(config)
     logger.log_package(name, manager, "install")
     click.echo(f"Logged install of '{name}' using '{manager}'.")
@@ -247,6 +251,7 @@ def remove(name, manager, scope):
 
     config = Config()
     config.set("scope", scope)
+    config.save()
     logger = PackageLogger(config)
     logger.log_package(name, manager, "remove")
     click.echo(f"Logged removal of '{name}' using '{manager}'.")
@@ -270,6 +275,7 @@ def query(name, manager, days, scope):
 
     config = Config()
     config.set("scope", scope)
+    config.save()
 
     logger = PackageLogger(config)
 

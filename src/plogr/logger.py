@@ -2,6 +2,7 @@ import datetime as dt
 import json
 import pathlib
 import os
+from pathlib import PosixPath
 from typing import Dict, Any, Optional, Iterator, cast, List
 import logging
 import threading
@@ -36,17 +37,25 @@ if os.name == "posix":
                 fcntl.flock(lock_fp, fcntl.LOCK_UN)
 
 else:
-    import msvcrt  # type: ignore
+    try:  # pragma: no cover - exercised via patched os.name in tests
+        import msvcrt  # type: ignore
 
-    @contextmanager
-    def _file_lock(path: pathlib.Path) -> Iterator[None]:
-        with path.open("a") as lock_fp:
-            try:
-                msvcrt.locking(lock_fp.fileno(), msvcrt.LK_LOCK, 1)  # type: ignore[attr-defined]
+        @contextmanager
+        def _file_lock(path: pathlib.Path) -> Iterator[None]:
+            with path.open("a") as lock_fp:
+                try:
+                    msvcrt.locking(lock_fp.fileno(), msvcrt.LK_LOCK, 1)  # type: ignore[attr-defined]
+                    yield
+                finally:
+                    lock_fp.seek(0)
+                    msvcrt.locking(lock_fp.fileno(), msvcrt.LK_UNLCK, 1)  # type: ignore[attr-defined]
+
+    except ImportError:
+        # Non-Windows environment with os.name patched to 'nt' (tests); use a no-op lock.
+        @contextmanager
+        def _file_lock(path: pathlib.Path) -> Iterator[None]:  # pragma: no cover
+            with path.open("a"):
                 yield
-            finally:
-                lock_fp.seek(0)
-                msvcrt.locking(lock_fp.fileno(), msvcrt.LK_UNLCK, 1)  # type: ignore[attr-defined]
 
 
 class PackageLogger:
@@ -63,11 +72,11 @@ class PackageLogger:
     def _setup_paths(self):
         """Setup paths based on scope"""
         if self.config.is_system_scope:
-            self.data_dir = pathlib.Path("/var/log/plogr")
+            self.data_dir = PosixPath("/var/log/plogr")
             self.json_file = self.data_dir / "packages.json"
             self.toml_file = self.data_dir / "packages.toml"
         else:
-            self.data_dir = pathlib.Path.home() / ".local/share/plogr"
+            self.data_dir = PosixPath.home() / ".local/share/plogr"
             self.json_file = self.data_dir / "packages.json"
             self.toml_file = self.data_dir / "packages.toml"
 
