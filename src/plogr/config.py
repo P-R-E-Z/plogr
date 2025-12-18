@@ -37,7 +37,11 @@ class Config:
             "enable_dnf_hooks": True,
             "enable_download_monitoring": True,
             # Expanded path under real HOME; tilde under mocked HOME to satisfy tests
-            "downloads_dir": ("~/Downloads" if PosixPath.home() != _ORIGINAL_HOME else str(_ORIGINAL_HOME / "Downloads")),
+            "downloads_dir": (
+                "~/Downloads"
+                if PosixPath.home() != _ORIGINAL_HOME
+                else str(_ORIGINAL_HOME / "Downloads")
+            ),
             "log_format": "both",
             "monitored_extensions": ".rpm, .deb, .pkg, .exe, .msi, .dmg",
         }
