@@ -6,7 +6,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -18,15 +18,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: |
+            /root/.cache/pip
+            /root/.cache/uv
+          key: ${{ runner.os }}-release-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+
       - name: Install build tools
         run: |
           dnf -y install rpm-build rpmlint gnupg copr-cli git-core python3-pip
           dnf -y install cmake gcc-c++ libdnf5-devel pkgconfig clang-tools-extra
           pip install build ruff black mypy
+          # Ensure we build with a supported interpreter (3.12/3.13); avoid 3.14 until PyO3 supports it.
+          ln -sf /usr/bin/python3.13 /usr/local/bin/python || true
 
       - name: Install project dependencies
         run: |
-          pip install -e .
+          UV_PYTHON=python3.13 PYO3_PYTHON=python3.13 pip install -e .
 
       - name: Run linting checks
         run: |
@@ -48,18 +58,18 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          if [ -n "$GPG_PRIVATE_KEY" ]; then
-            echo "$GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import -
-            echo "%_gpg_name Prez" >> ~/.rpmmacros
-            printf "%%_signature gpg\n%%_gpg_path ~/.gnupg\n%%_gpgbin $(which gpg)\n%%_gpg_passphrase $GPG_PASSPHRASE\n" >> ~/.rpmmacros
-          else
-            echo "GPG_PRIVATE_KEY not set, skipping GPG setup"
+          if [ -z "$GPG_PRIVATE_KEY" ]; then
+            echo "GPG_PRIVATE_KEY not set; failing release because signing is required."
+            exit 1
           fi
+          echo "$GPG_PRIVATE_KEY" | base64 -d | gpg --batch --import -
+          echo "%_gpg_name Prez" >> ~/.rpmmacros
+          printf "%%_signature gpg\n%%_gpg_path ~/.gnupg\n%%_gpgbin $(which gpg)\n%%_gpg_passphrase $GPG_PASSPHRASE\n" >> ~/.rpmmacros
 
       - name: Build source distribution
         run: |
-          python3 -m build --sdist
-          rpmlint -v prez-pkglog.spec || true
+          UV_PYTHON=python3.13 PYO3_PYTHON=python3.13 python3 -m build --sdist
+          rpmlint -v plogr.spec || true
 
       - name: Build C++ plugin
         run: |
@@ -72,8 +82,8 @@ jobs:
 
       - name: Build SRPM and RPM
         run: |
-          rpmbuild -bs prez-pkglog.spec --define "_sourcedir $(pwd)" --define "_srcrpmdir $(pwd)/dist"
-          rpmbuild -bb prez-pkglog.spec --define "_sourcedir $(pwd)" --define "_rpmdir $(pwd)/dist" --define "_srcrpmdir $(pwd)/dist"
+          rpmbuild -bs plogr.spec --define "_sourcedir $(pwd)" --define "_srcrpmdir $(pwd)/dist"
+          rpmbuild -bb plogr.spec --define "_sourcedir $(pwd)" --define "_rpmdir $(pwd)/dist" --define "_srcrpmdir $(pwd)/dist"
 
       - name: Run rpmlint on built RPMs
         run: |
@@ -84,27 +94,49 @@ jobs:
             exit 1
           fi
 
+      - name: Upload build artifacts (SRPM/RPM)
+        uses: actions/upload-artifact@v4
+        with:
+          name: plogr-dist
+          path: dist/*
+
       - name: Sign RPMs
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        shell: bash
         run: |
-          if [ -n "$GPG_PRIVATE_KEY" ]; then
-            for rpm in dist/*.rpm; do
-              rpmsign --addsign "$rpm"
-            done
-          else
-            echo "GPG_PRIVATE_KEY not set, skipping RPM signing"
+          set -euo pipefail
+          shopt -s nullglob
+          rpms=(dist/*.rpm)
+          if [ ${#rpms[@]} -eq 0 ]; then
+            echo "No RPM files to sign"
+            exit 1
           fi
+          for rpm in "${rpms[@]}"; do
+            rpmsign --addsign "$rpm"
+          done
 
       - name: Upload to Copr
         env:
           COPR_LOGIN: ${{ secrets.COPR_LOGIN }}
           COPR_TOKEN: ${{ secrets.COPR_TOKEN }}
+        shell: bash
         run: |
-          if [ -n "$COPR_LOGIN" ] && [ -n "$COPR_TOKEN" ]; then
-            for srpm in dist/*.src.rpm; do
-              copr-cli build "$COPR_LOGIN/prez-pkglog" "$srpm"
-            done
-          else
-            echo "COPR credentials not set, skipping upload"
-          fi 
+          if [ -z "$COPR_LOGIN" ] || [ -z "$COPR_TOKEN" ]; then
+            echo "COPR credentials not set; failing release because upload is required."
+            exit 1
+          fi
+          for srpm in dist/*.src.rpm; do
+            copr-cli build "$COPR_LOGIN/plogr" "$srpm"
+          done
+
+      - name: Publish GitHub Release with assets
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: plogr ${{ github.ref_name }}
+          files: |
+            dist/*.rpm
+            dist/*.src.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

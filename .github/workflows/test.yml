@@ -11,11 +11,19 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.12", "3.13"]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/uv
+          key: ${{ runner.os }}-test-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -33,4 +41,4 @@ jobs:
         run: pytest -q
 
       - name: Run tests with coverage
-        run: pytest --cov=src/prez_pkglog --cov-report=xml 
+        run: pytest --cov=src/plogr --cov-report=xml 

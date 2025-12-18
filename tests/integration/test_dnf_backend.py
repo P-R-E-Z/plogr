@@ -9,9 +9,9 @@ from unittest.mock import patch
 
 import pytest
 
-from src.prez_pkglog.backends.linux.dnf import DnfBackend
-from src.prez_pkglog.config import Config
-from src.prez_pkglog.logger import PackageLogger
+from src.plogr.backends.linux.dnf import DnfBackend
+from src.plogr.config import Config
+from src.plogr.logger import PackageLogger
 
 
 @pytest.mark.skip(reason="Test isolation issues with dnf module in full test suite")
@@ -31,10 +31,10 @@ class TestDNFBackendIntegration:
         # Force reload of the dnf module to avoid test isolation issues
         import sys
 
-        if "src.prez_pkglog.backends.linux.dnf" in sys.modules:
-            del sys.modules["src.prez_pkglog.backends.linux.dnf"]
-        if "src.prez_pkglog.backends" in sys.modules:
-            del sys.modules["src.prez_pkglog.backends"]
+        if "src.plogr.backends.linux.dnf" in sys.modules:
+            del sys.modules["src.plogr.backends.linux.dnf"]
+        if "src.plogr.backends" in sys.modules:
+            del sys.modules["src.plogr.backends"]
 
     def test_backend_availability(self):
         """Test that DNF backend can detect DNF availability."""
@@ -46,9 +46,9 @@ class TestDNFBackendIntegration:
                 # Force reload the backend to get fresh state
                 import sys
 
-                if "src.prez_pkglog.backends.linux.dnf" in sys.modules:
-                    del sys.modules["src.prez_pkglog.backends.linux.dnf"]
-                from src.prez_pkglog.backends.linux.dnf import DnfBackend as FreshDnfBackend
+                if "src.plogr.backends.linux.dnf" in sys.modules:
+                    del sys.modules["src.plogr.backends.linux.dnf"]
+                from src.plogr.backends.linux.dnf import DnfBackend as FreshDnfBackend
 
                 assert FreshDnfBackend.is_available() is True
             else:
@@ -81,9 +81,9 @@ class TestDNFBackendIntegration:
         # Force reload to get fresh state
         import sys
 
-        if "src.prez_pkglog.backends" in sys.modules:
-            del sys.modules["src.prez_pkglog.backends"]
-        from src.prez_pkglog.backends import discovered_backends
+        if "src.plogr.backends" in sys.modules:
+            del sys.modules["src.plogr.backends"]
+        from src.plogr.backends import discovered_backends
 
         # Check if DNF backend is in discovered backends
         dnf_backend_class = discovered_backends.get("dnf")
@@ -149,7 +149,7 @@ class TestDNFBackendIntegration:
     def test_error_handling_integration(self):
         """Test that backend handles errors gracefully."""
         # Test with invalid DNF module (simulate import error)
-        with patch("src.prez_pkglog.backends.linux.dnf.dnf", None):
+        with patch("src.plogr.backends.linux.dnf.dnf", None):
             # Create a new backend instance with dnf=None
             backend = DnfBackend(self.config)
             packages = backend.get_installed_packages()
@@ -160,9 +160,9 @@ class TestDNFBackendIntegration:
         # Force reload to get fresh state
         import sys
 
-        if "src.prez_pkglog.backends" in sys.modules:
-            del sys.modules["src.prez_pkglog.backends"]
-        from src.prez_pkglog.backends import discovered_backends
+        if "src.plogr.backends" in sys.modules:
+            del sys.modules["src.plogr.backends"]
+        from src.plogr.backends import discovered_backends
 
         # Check if DNF backend is in the list
         dnf_found = "dnf" in discovered_backends

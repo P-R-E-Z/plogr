@@ -5,8 +5,8 @@ from unittest.mock import patch
 import os
 import pytest
 
-from src.prez_pkglog.logger import PackageLogger
-from src.prez_pkglog.config import Config
+from src.plogr.logger import PackageLogger
+from src.plogr.config import Config
 
 
 class TestPackageLoggerLocking:
@@ -20,8 +20,8 @@ class TestPackageLoggerLocking:
             cfg = Config()  # default user scope
             logger = PackageLogger(cfg)
 
-            # Patch _append_toml to avoid TOML overhead during test
-            with patch.object(logger, "_append_toml", lambda *a, **k: None):
+            # Patch TOML rewrite to avoid TOML overhead during test
+            with patch.object(logger, "_rewrite_toml_from_json_data", lambda *a, **k: None):
                 num_threads = 20
                 entries_per_thread = 10
                 total_entries = num_threads * entries_per_thread
@@ -64,7 +64,7 @@ class TestPackageLoggerLocking:
             logger = PackageLogger(cfg)
 
             # Avoid TOML writes for speed
-            with patch.object(logger, "_append_toml", lambda *a, **k: None):
+            with patch.object(logger, "_rewrite_toml_from_json_data", lambda *a, **k: None):
                 for i in range(entries):
                     logger.log_package(f"proc_pkg_{i}", "apt", "install")
 
@@ -85,3 +85,21 @@ class TestPackageLoggerLocking:
             logger_main = PackageLogger(cfg_main)
         data = json.loads(logger_main.json_file.read_text())
         assert len(data) == per_proc * proc_count
+
+    def test_warns_once_when_toml_missing(self, tmp_path: Path, caplog):
+        """Warn once when TOML dependency is absent."""
+        with (
+            patch("pathlib.Path.home", return_value=tmp_path),
+            patch("src.plogr.logger.toml", None),
+            patch("src.plogr.logger._TOML_WARNING_EMITTED", False),
+        ):
+            caplog.set_level("WARNING")
+            cfg = Config()
+
+            PackageLogger(cfg)
+            warnings = [rec for rec in caplog.records if "TOML output disabled" in rec.message]
+            assert len(warnings) == 1
+
+            caplog.clear()
+            PackageLogger(cfg)
+            assert not caplog.records

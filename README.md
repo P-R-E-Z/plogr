@@ -1,14 +1,14 @@
-[![Lint Status](https://github.com/P-R-E-Z/prez-pkglog/actions/workflows/lint.yml/badge.svg)](https://github.com/P-R-E-Z/prez-pkglog/actions/workflows/lint.yml)
+[![Lint Status](https://github.com/P-R-E-Z/plogr/actions/workflows/lint.yml/badge.svg)](https://github.com/P-R-E-Z/plogr/actions/workflows/lint.yml)
 
-# prez-pkglog
+# plogr
 
-**prez-pkglog** is a cross-distro/platform package-activity logger that records every install and removal event on your system, then writes an append-only history in both JSON and TOML. It can also monitor your downloads(configurable) folder for new files.
+**plogr** is a cross-distro/platform package-activity logger that records every install and removal event on your system, then writes an append-only history in both JSON and TOML. It can also monitor your downloads(configurable) folder for new files.
 
 ---
 
 ## **Use of AI on this project**
 
-I currently use AI to help me with initial scaffolding, library/module research, debugging within the Cursor IDE, and documentation. All other aspects of the code is done by me, keep in mind I do this for fun so keep your expectations low... lol.
+I currently use AI to help me with scaffolding, research, debugging, and documentation. All other aspects of the code is done by me, keep in mind I do this for fun so keep your expectations low... lol.
 
 ---
 
@@ -68,17 +68,17 @@ Package builds will soon be available from my Copr repository.  Until then:
 
 ```bash
 # system Python → isolated environment in ~/.local/pipx:
-pipx install prez-pkglog==0.5.3
+pipx install plogr==0.5.3
 
 # verify
-prez-pkglog --help
+plogr --help
 ```
 
 You can now enable the download-monitoring service:
 
 ```bash
 systemctl --user daemon-reload   # first time only
-systemctl --user enable --now prez-pkglog.service
+systemctl --user enable --now plogr.service
 ```
 
 ### DNF5 Plugin Installation
@@ -90,8 +90,8 @@ The RPM package includes a native C++ plugin for DNF5 that provides automatic pa
 When you install the RPM package, the DNF5 plugin is automatically:
 
 1. **Built** using CMake with libdnf5 dependencies
-2. **Installed** to `/usr/lib64/dnf5/plugins/prez_pkglog.so`
-3. **Configured** with Actions Plugin hooks at `/usr/share/libdnf5/plugins/actions.d/prez_pkglog.actions`
+2. **Installed** to `/usr/lib64/dnf5/plugins/plogr.so`
+3. **Configured** with Actions Plugin hooks at `/usr/share/libdnf5/plugins/actions.d/plogr.actions`
 4. **Enabled** by default for automatic transaction logging
 
 #### Manual Installation
@@ -122,7 +122,7 @@ dnf5 --version
 dnf5 list installed | head -5
 
 # Check if transactions are being logged
-prez-pkglog status
+plogr status
 ```
 
 ### (Optional) DIY hooks for other package managers
@@ -130,19 +130,19 @@ prez-pkglog status
 <details>
 <summary><strong>APT / Debian & Ubuntu</strong></summary>
 
-1. Create `/etc/apt/apt.conf.d/99prez-pkglog` (system-wide) or `~/.config/apt/apt.conf.d/99prez-pkglog` (user):
+1. Create `/etc/apt/apt.conf.d/99plogr` (system-wide) or `~/.config/apt/apt.conf.d/99plogr` (user):
 
 ```conf
-DPkg::Post-Invoke { "prez-pkglog install-apt-hook || true"; };
+DPkg::Post-Invoke { "plogr install-apt-hook || true"; };
 ```
 
-2. Put a tiny helper on your PATH, e.g. `/usr/local/bin/prez-pkglog-install-apt-hook`:
+2. Put a tiny helper on your PATH, e.g. `/usr/local/bin/plogr-install-apt-hook`:
 
 ```bash
 #!/usr/bin/env bash
 # Log every package touched in the most recent dpkg transaction
 awk '{print $4}' /var/log/dpkg.log | tail -n +2 | while read -r pkg; do
-  prez-pkglog install "$pkg" apt
+  plogr install "$pkg" apt
 done
 ```
 
@@ -153,7 +153,7 @@ Make it executable (`chmod +x …`).
 <details>
 <summary><strong>Pacman / Arch</strong></summary>
 
-Create `/etc/pacman.d/hooks/prez-pkglog.hook`:
+Create `/etc/pacman.d/hooks/plogr.hook`:
 
 ```ini
 [Trigger]
@@ -164,12 +164,12 @@ Type      = Package
 Target    = *
 
 [Action]
-Description = Log package transaction with prez-pkglog
+Description = Log package transaction with plogr
 When        = PostTransaction
-Exec        = /usr/bin/prez-pkglog pacman-hook %t
+Exec        = /usr/bin/plogr pacman-hook %t
 ```
 
-`%t` is the transaction database path; you can parse it inside `pacman-hook` to emit individual `prez-pkglog install/remove` calls.
+`%t` is the transaction database path; you can parse it inside `pacman-hook` to emit individual `plogr install/remove` calls.
 
 </details>
 
@@ -189,10 +189,10 @@ For Homebrew, Chocolatey and Winget, use manual logging or adapt the examples ab
 
 | Package manager | Status | Setup |
 |-----------------|--------|-------|
-| **DNF4** (Fedora/RHEL) | Automatic logging via Python plugin | See [DNF Plugin Configuration](#dnf-plugin-configuration). The RPM installs `/usr/lib/python3.*/site-packages/dnf-plugins/prez_pkglog.py` and a sample config; enable it with `enabled=1`. |
-| **DNF5** (Fedora/RHEL) | Automatic logging via native C++ plugin | See [DNF Plugin Configuration](#dnf-plugin-configuration). The RPM installs `/usr/lib64/dnf5/plugins/prez_pkglog.so` and is enabled by default. |
+| **DNF4** (Fedora/RHEL) | Automatic logging via Python plugin | See [DNF Plugin Configuration](#dnf-plugin-configuration). The RPM installs `/usr/lib/python3.*/site-packages/dnf-plugins/plogr.py` and a sample config; enable it with `enabled=1`. |
+| **DNF5** (Fedora/RHEL) | Automatic logging via native C++ plugin | See [DNF Plugin Configuration](#dnf-plugin-configuration). The RPM installs `/usr/lib64/dnf5/plugins/plogr.so` and is enabled by default. |
 | **APT** (Debian/Ubuntu) | Planned | Parser exists (`apt.py`), but no hook yet. A `DPkg::Post-Invoke` script is needed. Help welcome → [Contributing](CONTRIBUTING.md) |
-| **Pacman** (Arch) | Planned | Parser exists (`pacman.py`). Needs an `alpm` hook (`/etc/pacman.d/hooks/prez-pkglog.hook`). See [Contributing](CONTRIBUTING.md) |
+| **Pacman** (Arch) | Planned | Parser exists (`pacman.py`). Needs an `alpm` hook (`/etc/pacman.d/hooks/plogr.hook`). See [Contributing](CONTRIBUTING.md) |
 
 </details>
 
@@ -223,9 +223,9 @@ See the [Contributing guide](CONTRIBUTING.md) if you’d like to help wire up th
 
 ### User Scope (Default)
 
-User scope logs packages for the current user only. Files are stored in `~/.local/share/prez-pkglog/`.
+User scope logs packages for the current user only. Files are stored in `~/.local/share/plogr/`.
 
-**Configuration file**: `~/.config/prez-pkglog/prez-pkglog.conf`
+**Configuration file**: `~/.config/plogr/plogr.conf`
 
 ```json
 {
@@ -240,9 +240,9 @@ User scope logs packages for the current user only. Files are stored in `~/.loca
 
 ### System Scope (Requires Administrator)
 
-System scope logs packages system-wide. Files are stored in `/var/log/prez-pkglog/`.
+System scope logs packages system-wide. Files are stored in `/var/log/plogr/`.
 
-**Configuration file**: `/etc/prez-pkglog/prez-pkglog.conf`
+**Configuration file**: `/etc/plogr/plogr.conf`
 
 ```json
 {
@@ -255,11 +255,11 @@ System scope logs packages system-wide. Files are stored in `/var/log/prez-pkglo
 
 ### DNF Plugin Configuration
 
-prez-pkglog includes both a Python plugin for DNF4 and a native C++ plugin for DNF5.
+plogr includes both a Python plugin for DNF4 and a native C++ plugin for DNF5.
 
 #### DNF4 (Python Plugin)
 
-**User scope**: `~/.config/dnf/plugins/prez_pkglog.conf`
+**User scope**: `~/.config/dnf/plugins/plogr.conf`
 
 ```ini
 [main]
@@ -267,7 +267,7 @@ enabled = 1
 scope = user
 ```
 
-**System scope**: `/etc/dnf/plugins/prez_pkglog.conf`
+**System scope**: `/etc/dnf/plugins/plogr.conf`
 
 ```ini
 [main]
@@ -277,9 +277,9 @@ scope = system
 
 #### DNF5 (Native C++ Plugin)
 
-The DNF5 plugin is automatically installed to `/usr/lib64/dnf5/plugins/prez_pkglog.so` and is enabled by default.
+The DNF5 plugin is automatically installed to `/usr/lib64/dnf5/plugins/plogr.so` and is enabled by default.
 
-**User scope**: `~/.config/dnf5/plugins/prez_pkglog.conf`
+**User scope**: `~/.config/dnf5/plugins/plogr.conf`
 
 ```ini
 [main]
@@ -287,7 +287,7 @@ enabled = 1
 scope = user
 ```
 
-**System scope**: `/etc/dnf5/plugins/prez_pkglog.conf`
+**System scope**: `/etc/dnf5/plugins/plogr.conf`
 
 ```ini
 [main]
@@ -301,9 +301,9 @@ scope = system
 - **DNF4 plugin not loading**: Ensure you're using DNF4 (`dnf --version`) and the plugin is installed to `/usr/lib/python3.*/site-packages/dnf-plugins/`
 - **Both plugins installed**: The system will use the appropriate plugin based on which DNF version you're running
 - **Plugin conflicts**: Only one plugin should be active at a time; the Python plugin is for DNF4, the C++ plugin is for DNF5
-- **DNF5 transactions not logged**: Check that the Actions Plugin file at `/usr/share/libdnf5/plugins/actions.d/prez_pkglog.actions` exists and has no trailing characters
-- **Scope detection issues**: Run `sudo prez-pkglog setup` to properly configure system scope, or use `prez-pkglog setup` for user scope
-- **Configuration conflicts**: Ensure only one config file exists - either system (`/etc/prez-pkglog/`) or user (`~/.config/prez-pkglog/`)
+- **DNF5 transactions not logged**: Check that the Actions Plugin file at `/usr/share/libdnf5/plugins/actions.d/plogr.actions` exists and has no trailing characters
+- **Scope detection issues**: Run `sudo plogr setup` to properly configure system scope, or use `plogr setup` for user scope
+- **Configuration conflicts**: Ensure only one config file exists - either system (`/etc/plogr/`) or user (`~/.config/plogr/`)
 
 ---
 
@@ -315,14 +315,14 @@ All commands can be run with `--scope user` (default) or `--scope system` (requi
 
 Initializes configuration and directories.
 ```bash
-prez-pkglog setup
+plogr setup
 ```
 
 ### Check Status
 
 Show current status and statistics.
 ```bash
-prez-pkglog status
+plogr status
 ```
 
 ### Start Monitoring
@@ -330,7 +330,10 @@ prez-pkglog status
 Starts the monitoring daemon. For users, this monitors the downloads directory.
 ```bash
 # Start download monitoring (user scope only, foreground)
-prez-pkglog daemon
+plogr daemon
+
+# Run in background (non-systemd, POSIX only)
+plogr daemon --background
 
 # Run continuously via systemd-user service
 # (the unit file is shipped in /usr/lib/systemd/user by the RPM)
@@ -339,7 +342,7 @@ prez-pkglog daemon
 systemctl --user daemon-reload
 # 2. Enable + start the logger – this will automatically create
 #    ~/.config/systemd/user/ if it does not already exist.
-systemctl --user enable --now prez-pkglog.service
+systemctl --user enable --now plogr.service
 
 # Note: The systemd service includes security hardening that restricts
 # access to only the log directory and Downloads folder. If you use a
@@ -348,16 +351,17 @@ systemctl --user enable --now prez-pkglog.service
 # Optional: keep the service running even after logging out
 sudo loginctl enable-linger "$USER"
 ```
+> System scope requires sudo. Without it, commands fall back to user scope and emit a warning.
 
 ### Query Logs
 
 Search the package logs.
 ```bash
 # Find all packages with 'nginx' in the name
-prez-pkglog query --name nginx
+plogr query --name nginx
 
 # Find packages installed with dnf in the last 30 days
-prez-pkglog query --manager dnf --days 30
+plogr query --manager dnf --days 30
 ```
 
 ### Export Logs
@@ -365,7 +369,7 @@ prez-pkglog query --manager dnf --days 30
 Export the full log to stdout.
 ```bash
 # Export user logs as JSON
-prez-pkglog export --format json
+plogr export --format json
 ```
 
 ### Manual Logging
@@ -373,13 +377,13 @@ prez-pkglog export --format json
 Manually log a package installation or removal.
 ```bash
 # Log a package installation
-prez-pkglog install package-name dnf
+plogr install package-name dnf
 
 # Log a package removal
-prez-pkglog remove package-name dnf
+plogr remove package-name dnf
 
 # Log a downloaded file
-prez-pkglog install downloaded-file.zip download
+plogr install downloaded-file.zip download
 ```
 
 ---
@@ -395,7 +399,7 @@ function pkglog_preexec() {
     [[ $1 == git\ clone* ]] || return
     local repo=${${1#git clone }##*/}
     repo=${repo%.git}
-    prez-pkglog install $repo git
+    plogr install $repo git
 }
 autoload -Uz add-zsh-hook
 add-zsh-hook preexec pkglog_preexec
@@ -409,7 +413,7 @@ function _pkglog_bash_preexec() {
    local repo=${BASH_COMMAND#git clone}
    repo=${repo##*/}
    repo=${repo%.git}
-   prez-pkglog install "$repo" git
+   plogr install "$repo" git
 }
 ```
 
@@ -419,7 +423,7 @@ function _pkglog_bash_preexec() {
 function fish_preexec --on-event fish_preexec
   if string match -rq '^git clone ' -- $argv[1]
     set repo (basename (string replace -r '^git clone +' '' $argv[1]) .git)
-    prez-pkglog install $repo git
+    plogr install $repo git
   end
 end
 ```
@@ -497,19 +501,19 @@ file_type = ".tar.bz2"
 
 ### User Scope
 
-- **Log files**: `~/.local/share/prez-pkglog/`
+- **Log files**: `~/.local/share/plogr/`
   - `packages.json`
   - `packages.toml`
-- **Configuration**: `~/.config/prez-pkglog/prez-pkglog.conf`
-- **DNF plugin config**: `~/.config/dnf/plugins/prez_pkglog.conf`
+- **Configuration**: `~/.config/plogr/plogr.conf`
+- **DNF plugin config**: `~/.config/dnf/plugins/plogr.conf`
 
 ### System Scope
 
-- **Log files**: `/var/log/prez-pkglog/`
+- **Log files**: `/var/log/plogr/`
   - `packages.json`
   - `packages.toml`
-- **Configuration**: `/etc/prez-pkglog/prez-pkglog.conf`
-- **DNF plugin config**: `/etc/dnf/plugins/prez_pkglog.conf`
+- **Configuration**: `/etc/plogr/plogr.conf`
+- **DNF plugin config**: `/etc/dnf/plugins/plogr.conf`
 
 ---
 
@@ -523,6 +527,11 @@ make rpm
 
 # Install the newly built package
 make install
+
+# Supported Python: 3.12–3.13. Python 3.14 is currently blocked because PyO3/pydantic-core
+# do not yet support it. If your system Python is newer, set build envs to 3.13:
+# UV_PYTHON=python3.13 PYO3_PYTHON=python3.13 make rpm
+# UV_PYTHON=python3.13 PYO3_PYTHON=python3.13 make install
 ```
 
 The `Makefile` handles placing the source tarball in the correct `rpmbuild` directory for you.

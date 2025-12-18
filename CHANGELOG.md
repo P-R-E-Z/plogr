@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Concurrency: switched logger to a re-entrant lock (RLock) to avoid deadlocks during nested writes
 
 ### Verify
-- After `dnf install/remove`, `/var/log/prez-pkglog/packages.json` should contain a single record per package, with `removed=true` after removal; `prez-pkglog status` will reflect correct totals
+- After `dnf install/remove`, `/var/log/plogr/packages.json` should contain a single record per package, with `removed=true` after removal; `plogr status` will reflect correct totals
 
 ## [0.6.4] - 2025-08-09
 
@@ -26,7 +26,7 @@ out-of-box. The following updates will be knocking out some TODO's for the DNF p
 
 ### Fixed
 - **DNF5 Actions Plugin**: Fixed trailing character issue in actions file that prevented transaction logging
-- **Scope Detection**: Fixed `sudo prez-pkglog setup` to correctly detect and configure system scope
+- **Scope Detection**: Fixed `sudo plogr setup` to correctly detect and configure system scope
 - **Configuration Priority**: System config now properly overrides user config when both exist
 - **DNF4 Plugin**: Fixed conditional import handling and plugin inheritance for better compatibility
 - **CLI Setup Command**: Fixed duplicate decorator and parameter mapping issues
@@ -37,9 +37,9 @@ out-of-box. The following updates will be knocking out some TODO's for the DNF p
 - **Scope Management**: Improved logic to ensure single source of truth for active scope configuration
 - **Config File Location**: Enhanced automatic detection of system vs user configuration files
 - **Release Process**: Improved Makefile to automatically update spec file version during releases
-- **DNF5 Actions Plugin**: Updated to call CLI with `--scope system` ensuring logs go to `/var/log/prez-pkglog`
+- **DNF5 Actions Plugin**: Updated to call CLI with `--scope system` ensuring logs go to `/var/log/plogr`
 - **CLI**: Defaults to system scope when run as root; falls back to user scope if non-root requests system
-- **Documentation updated**: Config examples now use JSON and hyphenated file names (`prez-pkglog.conf`)
+- **Documentation updated**: Config examples now use JSON and hyphenated file names (`plogr.conf`)
 - **Build/CI/docs** Paths updated to `libdnf5-plugin/dnf5-plugin/`
 
 ### Added
@@ -62,9 +62,9 @@ out-of-box. The following updates will be knocking out some TODO's for the DNF p
 - **Dynamic Backend Loading**: Implemented dynamic discovery and loading of all available package manager backends at runtime.
 - **Skeleton Backends**: Added skeleton backends for APT, Pacman, Homebrew (macOS), and Chocolatey/Winget (Windows) to guide future contributors.
 - **Systemd User Service**: Added a `systemd` user service file to automatically run the downloads monitor on login.
-- **Configuration for Downloads Monitor**: The downloads directory and monitored file extensions are now configurable in `prez_pkglog.conf`.
+- **Configuration for Downloads Monitor**: The downloads directory and monitored file extensions are now configurable in `plogr.conf`.
 - **Thread/Process Safe Logging**: Implemented atomic writes and locking to prevent log corruption in concurrent scenarios.
-- **Configuration Persistence**: Application settings are now saved to `prez_pkglog.conf` automatically.
+- **Configuration Persistence**: Application settings are now saved to `plogr.conf` automatically.
 
 ### Changed
 
@@ -74,8 +74,8 @@ out-of-box. The following updates will be knocking out some TODO's for the DNF p
 
 ### Added
 - **Automatic Release Workflow**: New `.github/workflows/release.yml` builds the sdist/SRPM & RPM, runs the full test suite with `%pytest`, signs the binaries with your GPG key, and uploads the SRPM to Copr when a version tag is pushed.
-- **Parsing Helper**: Introduced `parse_pacman_query_line()` in `src/prez_pkglog/backends/helpers.py` for robust Pacman output parsing.
-- **Spec Tests**: Added `%check` section to `prez-pkglog.spec` so the RPM build runs `pytest` automatically.
+- **Parsing Helper**: Introduced `parse_pacman_query_line()` in `src/plogr/backends/helpers.py` for robust Pacman output parsing.
+- **Spec Tests**: Added `%check` section to `plogr.spec` so the RPM build runs `pytest` automatically.
 
 ### Changed
 - **Pacman Backend** now uses the new parsing helper and gracefully skips malformed lines.
@@ -84,4 +84,4 @@ out-of-box. The following updates will be knocking out some TODO's for the DNF p
 ### Fixed
 - Minor packaging clean-ups and logging improvements discovered during the refactor.
 
-[0.5.3]: https://github.com/P-R-E-Z/prez-pkglog/releases/tag/v0.5.3
+[0.5.3]: https://github.com/P-R-E-Z/plogr/releases/tag/v0.5.3

@@ -1,9 +1,9 @@
 [project]
-name = "prez-pkglog"
-version = "0.6.5"
+name = "plogr"
+version = "0.7.0"
 description = "Cross-platform package installation logger"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12,<3.14"
 license = "MIT"
 authors = [
     { name = "Prez", email = "154857421+P-R-E-Z@users.noreply.github.com" },
@@ -17,9 +17,9 @@ classifiers = [
 ]
 dependencies = [
     "appdirs>=1.4.4",
-    "click>=8.2.1",
+    "click>=8.1.7",
     "pydantic>=2",
-    "python-dotenv>=1.1.1",
+    "python-dotenv>=1.1.0",
     "rich>=14.0.0",
     "toml>=0.10.2",
     "watchdog>=6.0.0",
@@ -47,7 +47,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-prez-pkglog = "prez_pkglog.cli:cli"
+plogr = "plogr.cli:cli"
 
 [tool.uv]
 default-groups = ["dev"]

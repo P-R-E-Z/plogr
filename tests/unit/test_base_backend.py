@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock
 import pytest
 
-from src.prez_pkglog.backends.base import PackageBackend, PackageInfo
+from src.plogr.backends.base import PackageBackend, PackageInfo
 
 
 class TestPackageInfo:

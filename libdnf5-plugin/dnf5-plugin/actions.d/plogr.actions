@@ -1,0 +1,2 @@
+post_transaction:*:in::/usr/bin/plogr install --scope system "${pkg.name}" dnf
+post_transaction:*:out::/usr/bin/plogr remove --scope system "${pkg.name}" dnf 

@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 #export DH_VERBOSE = 1
-export PYBUILD_NAME = prez-pkglog
+export PYBUILD_NAME = plogr
 
 %:
 	dh $@ --with python3
@@ -10,7 +10,7 @@ override_dh_auto_install:
 	dh_auto_install -- --install-layout=deb
 
 override_dh_installsystemd:
-	dh_installsystemd --name=prez-pkglog
+	dh_installsystemd --name=plogr
 
 override_dh_installinit:
-	dh_installinit --name=prez-pkglog 
+	dh_installinit --name=plogr 

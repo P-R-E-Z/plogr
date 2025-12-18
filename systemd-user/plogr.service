@@ -1,0 +1,23 @@
+[Unit]
+Description=Plogr (Downloads Monitor)
+Documentation=https://github.com/P-R-E-Z/plogr
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/plogr daemon --scope user
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=10
+# Security hardening - allows access only to necessary directories
+ProtectSystem=strict
+ProtectHome=read-only
+# Allow access to log directory and common downloads directories
+# Note: If using custom downloads directory, adjust ReadWritePaths accordingly
+ReadWritePaths=%h/.local/share/plogr %h/Downloads %h/Download
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

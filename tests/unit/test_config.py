@@ -1,11 +1,12 @@
 """Unit tests for the config module"""
 
+import json
 import os
 from pathlib import Path
 from unittest.mock import patch
 
 
-from src.prez_pkglog.config import Config
+from src.plogr.config import Config
 
 
 class TestConfig:
@@ -177,7 +178,23 @@ class TestConfig:
         assert "Config" in repr_str
         assert "scope=" in repr_str
 
-    @patch("src.prez_pkglog.config.Path.home")
+    def test_prefers_system_config_when_present(self, tmp_path: Path):
+        """System config should be chosen when it exists."""
+        system_cfg = tmp_path / "etc/plogr.conf"
+        user_cfg = tmp_path / "user/plogr.conf"
+        system_cfg.parent.mkdir(parents=True, exist_ok=True)
+        user_cfg.parent.mkdir(parents=True, exist_ok=True)
+
+        system_cfg.write_text(json.dumps({"scope": "system"}))
+        user_cfg.write_text(json.dumps({"scope": "user"}))
+
+        with patch("os.geteuid", return_value=0):
+            config = Config(system_config_file=system_cfg, user_config_file=user_cfg)
+
+        assert config.config_file == system_cfg
+        assert config.get("scope") == "system"
+
+    @patch("src.plogr.config.Path.home")
     def test_config_with_mocked_home(self, mock_home):
         """Test Config behavior with mocked home directory."""
         mock_home.return_value = Path("/mock/home")

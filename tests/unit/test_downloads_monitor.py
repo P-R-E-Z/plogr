@@ -3,7 +3,7 @@
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
-from src.prez_pkglog.monitors.downloads import (
+from src.plogr.monitors.downloads import (
     DownloadsMonitor,
     DownloadsEventHandler,
 )
@@ -34,7 +34,7 @@ class TestDownloadsMonitor:
 
         assert monitor.pkg_logger == mock_logger
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", False)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", False)
     def test_start_watchdog_not_available(self):
         """Test start when watchdog is not available."""
         mock_logger = MagicMock()
@@ -43,14 +43,14 @@ class TestDownloadsMonitor:
 
         monitor = DownloadsMonitor(mock_logger)
 
-        with patch("src.prez_pkglog.monitors.downloads.logger") as mock_logger_module:
+        with patch("src.plogr.monitors.downloads.logger") as mock_logger_module:
             monitor.start()
 
             mock_logger_module.warning.assert_called_with(
                 "watchdog library not found. Download monitoring disabled."
             )
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", True)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", True)
     def test_start_downloads_dir_not_exists(self):
         """Test start when Downloads directory doesn't exist."""
         mock_logger = MagicMock()
@@ -61,7 +61,7 @@ class TestDownloadsMonitor:
 
         with (
             patch("pathlib.Path.exists", return_value=False),
-            patch("src.prez_pkglog.monitors.downloads.logger") as mock_logger_module,
+            patch("src.plogr.monitors.downloads.logger") as mock_logger_module,
         ):
             monitor.start()
 
@@ -69,7 +69,7 @@ class TestDownloadsMonitor:
                 f"Downloads directory {monitor.downloads_dir} not found. Monitoring disabled."
             )
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", True)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", True)
     def test_start_success(self):
         """Test successful start of monitoring."""
         mock_logger = MagicMock()
@@ -80,8 +80,8 @@ class TestDownloadsMonitor:
 
         with (
             patch("pathlib.Path.exists", return_value=True),
-            patch("src.prez_pkglog.monitors.downloads.Observer") as mock_observer_class,
-            patch("src.prez_pkglog.monitors.downloads.logger") as mock_logger_module,
+            patch("src.plogr.monitors.downloads.Observer") as mock_observer_class,
+            patch("src.plogr.monitors.downloads.logger") as mock_logger_module,
         ):
             mock_observer = MagicMock()
             mock_observer_class.return_value = mock_observer
@@ -105,7 +105,7 @@ class TestDownloadsMonitor:
         # Should not raise any exception
         monitor.stop()
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", True)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", True)
     def test_stop_with_observer(self):
         """Test stop with observer."""
         mock_logger = MagicMock()
@@ -116,7 +116,7 @@ class TestDownloadsMonitor:
 
         with (
             patch("pathlib.Path.exists", return_value=True),
-            patch("src.prez_pkglog.monitors.downloads.Observer") as mock_observer_class,
+            patch("src.plogr.monitors.downloads.Observer") as mock_observer_class,
         ):
             mock_observer = MagicMock()
             mock_observer_class.return_value = mock_observer
@@ -164,7 +164,7 @@ class TestDownloadsEventHandler:
 
             # Mock the actual Path creation inside the handler
             with patch(
-                "src.prez_pkglog.monitors.downloads.Path",
+                "src.plogr.monitors.downloads.Path",
                 return_value=mock_path,
             ):
                 handler.on_created(mock_event)
@@ -218,7 +218,7 @@ class TestDownloadsEventHandler:
 
             # Mock the actual Path creation inside the handler
             with patch(
-                "src.prez_pkglog.monitors.downloads.Path",
+                "src.plogr.monitors.downloads.Path",
                 return_value=mock_path,
             ):
                 handler.on_created(mock_event)
@@ -254,7 +254,7 @@ class TestDownloadsEventHandler:
 
                 # Mock the actual Path creation inside the handler
                 with patch(
-                    "src.prez_pkglog.monitors.downloads.Path",
+                    "src.plogr.monitors.downloads.Path",
                     return_value=mock_path,
                 ):
                     handler.on_created(mock_event)
@@ -293,7 +293,7 @@ class TestDownloadsEventHandler:
 
                 # Mock the actual Path creation inside the handler
                 with patch(
-                    "src.prez_pkglog.monitors.downloads.Path",
+                    "src.plogr.monitors.downloads.Path",
                     return_value=mock_path,
                 ):
                     # Should not raise any exception
@@ -323,10 +323,10 @@ class TestDownloadsEventHandler:
             # Mock the actual Path creation inside the handler
             with (
                 patch(
-                    "src.prez_pkglog.monitors.downloads.Path",
+                    "src.plogr.monitors.downloads.Path",
                     return_value=mock_path,
                 ),
-                patch("src.prez_pkglog.monitors.downloads.logger") as mock_logger_module,
+                patch("src.plogr.monitors.downloads.logger") as mock_logger_module,
             ):
                 # Should not raise OSError - the current implementation handles stat errors
                 handler.on_created(mock_event)

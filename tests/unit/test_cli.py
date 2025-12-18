@@ -3,7 +3,7 @@
 from unittest.mock import patch, MagicMock
 from click.testing import CliRunner
 
-from src.prez_pkglog.cli import cli
+from src.plogr.cli import cli
 
 
 class TestCLI:
@@ -17,13 +17,13 @@ class TestCLI:
         """Test CLI help command."""
         result = self.runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
-        assert "Prez Package Logger" in result.output
+        assert "Plogr" in result.output
 
     def test_setup_user_scope(self):
         """Test setup command with user scope."""
         with (
-            patch("src.prez_pkglog.config.Config") as mock_config_class,
-            patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class,
+            patch("src.plogr.config.Config") as mock_config_class,
+            patch("src.plogr.logger.PackageLogger") as mock_logger_class,
         ):
             mock_config = MagicMock()
             mock_config_class.return_value = mock_config
@@ -41,8 +41,8 @@ class TestCLI:
     def test_setup_system_scope(self):
         """Test setup command with system scope."""
         with (
-            patch("src.prez_pkglog.config.Config") as mock_config_class,
-            patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class,
+            patch("src.plogr.config.Config") as mock_config_class,
+            patch("src.plogr.logger.PackageLogger") as mock_logger_class,
             patch("os.geteuid", return_value=0),
         ):  # Mock as root
             mock_config = MagicMock()
@@ -67,7 +67,7 @@ class TestCLI:
 
     def test_status_user_scope(self):
         """Test status command with user scope."""
-        with patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class:
+        with patch("src.plogr.logger.PackageLogger") as mock_logger_class:
             mock_logger = MagicMock()
             mock_logger.get_statistics.return_value = {
                 "total": 5,
@@ -90,7 +90,7 @@ class TestCLI:
     def test_status_system_scope(self):
         """Test status command with system scope."""
         with (
-            patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class,
+            patch("src.plogr.logger.PackageLogger") as mock_logger_class,
             patch("os.geteuid", return_value=0),
         ):  # Mock as root
             mock_logger = MagicMock()
@@ -113,7 +113,7 @@ class TestCLI:
 
     def test_export_json_format(self):
         """Test export command with JSON format."""
-        with patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class:
+        with patch("src.plogr.logger.PackageLogger") as mock_logger_class:
             mock_logger = MagicMock()
             mock_logger.json_file = MagicMock()
             mock_logger.json_file.read_text.return_value = '[{"name": "test"}]'
@@ -126,7 +126,7 @@ class TestCLI:
 
     def test_export_toml_format(self):
         """Test export command with TOML format."""
-        with patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class:
+        with patch("src.plogr.logger.PackageLogger") as mock_logger_class:
             mock_logger = MagicMock()
             mock_logger.toml_file = MagicMock()
             mock_logger.toml_file.read_text.return_value = "# Test package"
@@ -147,8 +147,8 @@ class TestCLI:
     def test_daemon_user_scope(self):
         """Test daemon command with user scope."""
         with (
-            patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class,
-            patch("src.prez_pkglog.monitors.downloads.DownloadsMonitor") as mock_monitor_class,
+            patch("src.plogr.logger.PackageLogger") as mock_logger_class,
+            patch("src.plogr.monitors.downloads.DownloadsMonitor") as mock_monitor_class,
         ):
             mock_logger = MagicMock()
             mock_logger_class.return_value = mock_logger
@@ -166,10 +166,41 @@ class TestCLI:
             mock_monitor.start.assert_called_once()
             mock_monitor.stop.assert_called_once()
 
+    def test_daemon_user_scope_background(self):
+        """Background flag should attempt to daemonize and still start monitor."""
+        with (
+            patch("src.plogr.logger.PackageLogger") as mock_logger_class,
+            patch("src.plogr.monitors.downloads.DownloadsMonitor") as mock_monitor_class,
+            patch("src.plogr.cli._daemonize", return_value=True) as mock_daemonize,
+        ):
+            mock_logger = MagicMock()
+            mock_logger_class.return_value = mock_logger
+
+            mock_monitor = MagicMock()
+            mock_monitor_class.return_value = mock_monitor
+
+            with patch("time.sleep", side_effect=KeyboardInterrupt):
+                result = self.runner.invoke(cli, ["daemon", "--scope", "user", "--background"])
+
+            assert result.exit_code == 0
+            assert "Backgrounding daemon" in result.output
+            assert "Monitoring started in background" in result.output
+            mock_daemonize.assert_called_once()
+            mock_monitor.start.assert_called_once()
+            mock_monitor.stop.assert_called_once()
+
+    def test_daemon_background_not_supported_on_windows(self):
+        """Background flag should warn on Windows."""
+        with patch("os.name", "nt"):
+            result = self.runner.invoke(cli, ["daemon", "--scope", "user", "--background"])
+
+        assert result.exit_code == 0
+        assert "Background mode is not supported on Windows." in result.output
+
     def test_daemon_system_scope(self):
         """Test daemon command with system scope (no download monitoring)."""
         with (
-            patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class,
+            patch("src.plogr.logger.PackageLogger") as mock_logger_class,
             patch("os.geteuid", return_value=0),
         ):  # Mock as root
             mock_logger = MagicMock()
@@ -186,8 +217,8 @@ class TestCLI:
     def test_default_scope_is_user(self):
         """Test that default scope is user when not specified."""
         with (
-            patch("src.prez_pkglog.config.Config") as mock_config_class,
-            patch("src.prez_pkglog.logger.PackageLogger") as mock_logger_class,
+            patch("src.plogr.config.Config") as mock_config_class,
+            patch("src.plogr.logger.PackageLogger") as mock_logger_class,
         ):
             mock_config = MagicMock()
             mock_config.get.return_value = "user"

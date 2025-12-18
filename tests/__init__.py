@@ -1,3 +1,3 @@
-"""Test suite for prez-pkglog."""
+"""Test suite for plogr."""
 
 __version__ = "0.6.3"

@@ -1,9 +1,10 @@
-PROJECT := prez-pkglog
-SPEC	:= prez-pkglog.spec
+PROJECT := plogr
+SPEC	:= plogr.spec
 VERSION	:= $(shell grep '^Version' $(SPEC) | awk '{print $$2}')
 RELEASE ?= $(shell grep '^Release' $(SPEC) | awk '{print $$2}')
 RPMBUILD_DIR := $(shell rpm --eval '%{_topdir}')
 MOCKCFG := fedora-42-x86_64
+UV_PYTHON ?= python3.13
 
 .PHONY: help lint test build sdist wheel srpm rpm mock install release clean format format-cpp check-format
 help:
@@ -56,13 +57,13 @@ sdist:
 	uv run python -m build --sdist
 
 wheel:
-	uv run python -m build --wheel
+	UV_PYTHON=$(UV_PYTHON) PYO3_PYTHON=$(UV_PYTHON) uv run python -m build --wheel
 
 srpm: sdist
 	mkdir -p $(RPMBUILD_DIR)/SOURCES
 	# The sdist produced by Python build uses an underscore in the archive name
-	# (e.g. prez_pkglog-0.6.1.tar.gz) while the RPM spec expects a hyphen
-	# (prez-pkglog-0.6.1.tar.gz). Copy and rename accordingly so rpmbuild finds it.
+	# (e.g. plogr-0.6.1.tar.gz) while the RPM spec expects a hyphen
+	# (plogr-0.6.1.tar.gz). Copy and rename accordingly so rpmbuild finds it.
 	cp dist/$(subst -,_,${PROJECT})-${VERSION}.tar.gz \
 	  $(RPMBUILD_DIR)/SOURCES/$(PROJECT)-$(VERSION).tar.gz
 	rpmbuild -bs $(SPEC)

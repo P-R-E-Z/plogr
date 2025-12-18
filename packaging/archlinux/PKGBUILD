@@ -1,10 +1,10 @@
 # Maintainer: Prez <154857421+P-R-E-Z@users.noreply.github.com>
-pkgname=prez-pkglog
-pkgver=0.5.0
+pkgname=plogr
+pkgver=0.7.0
 pkgrel=1
 pkgdesc="Cross-platform package installation logger"
 arch=('any')
-url="https://github.com/P-R-E-Z/prez-pkglog"
+url="https://github.com/P-R-E-Z/plogr"
 license=('MIT')
 depends=('python' 'python-pydantic' 'python-rich' 'python-click' 'python-watchdog' 'python-appdirs' 'python-toml')
 makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel')
@@ -22,6 +22,6 @@ package() {
     python -m installer --destdir="$pkgdir" "$pkgdir/tmp.whl"
 
     # Install hook
-    install -D -m0755 "packaging/archlinux/prez-pkglog-hook.sh" "$pkgdir/usr/share/prez-pkglog/prez-pkglog-hook.sh"
-    install -D -m0644 "packaging/archlinux/prez-pkglog.hook" "$pkgdir/usr/share/libalpm/hooks/prez-pkglog.hook"
+    install -D -m0755 "packaging/archlinux/plogr-hook.sh" "$pkgdir/usr/share/plogr/plogr-hook.sh"
+    install -D -m0644 "packaging/archlinux/plogr.hook" "$pkgdir/usr/share/libalpm/hooks/plogr.hook"
 } 

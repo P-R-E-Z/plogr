@@ -12,21 +12,21 @@ class TestCppPlugin:
         """Test that the plugin can be compiled."""
         plugin_dir = Path("libdnf5-plugin/dnf5-plugin")
         cmake_file = plugin_dir / "CMakeLists.txt"
-        cpp_file = plugin_dir / "src" / "prez_pkglog_plugin.cpp"
+        cpp_file = plugin_dir / "src" / "plogr_plugin.cpp"
 
         # Check that plugin files exist
         assert cmake_file.exists(), "CMakeLists.txt should exist"
-        assert cpp_file.exists(), "prez_pkglog_plugin.cpp should exist"
+        assert cpp_file.exists(), "plogr_plugin.cpp should exist"
 
         # Check that CMakeLists.txt has required content
         cmake_content = cmake_file.read_text()
         assert "libdnf5" in cmake_content, "CMakeLists.txt should reference libdnf5"
-        assert "prez_pkglog" in cmake_content, "CMakeLists.txt should build prez_pkglog plugin"
+        assert "plogr" in cmake_content, "CMakeLists.txt should build plogr plugin"
 
         # Check that C++ file has required content
         cpp_content = cpp_file.read_text()
         assert "libdnf5" in cpp_content, "C++ file should use libdnf5"
-        assert "prez_pkglog" in cpp_content, "C++ file should implement prez-pkglog functionality"
+        assert "plogr" in cpp_content, "C++ file should implement plogr functionality"
 
     def test_plugin_installation_path(self):
         """Test that plugin installs to correct path."""
@@ -41,7 +41,7 @@ class TestCppPlugin:
 
     def test_clang_format_compliance(self):
         """Test that C++ code follows clang-format standards."""
-        cpp_file = Path("libdnf5-plugin/dnf5-plugin/src/prez_pkglog_plugin.cpp")
+        cpp_file = Path("libdnf5-plugin/dnf5-plugin/src/plogr_plugin.cpp")
 
         if cpp_file.exists():
             # Check that file has reasonable formatting
@@ -82,7 +82,7 @@ class TestCppPlugin:
 
         if cmake_file.exists():
             cmake_content = cmake_file.read_text()
-            assert 'OUTPUT_NAME "prez_pkglog"' in cmake_content, (
+            assert 'OUTPUT_NAME "plogr"' in cmake_content, (
                 "Plugin should have correct output name"
             )
 
@@ -113,11 +113,11 @@ class TestCppPlugin:
             src_dir = plugin_dir / "src"
             if src_dir.exists():
                 src_files = [f.name for f in src_dir.iterdir()]
-                assert "prez_pkglog_plugin.cpp" in src_files, "Should have C++ source file in src/"
+                assert "plogr_plugin.cpp" in src_files, "Should have C++ source file in src/"
 
     def test_plugin_functionality_requirements(self):
         """Test that plugin implements required functionality."""
-        cpp_file = Path("libdnf5-plugin/dnf5-plugin/src/prez_pkglog_plugin.cpp")
+        cpp_file = Path("libdnf5-plugin/dnf5-plugin/src/plogr_plugin.cpp")
 
         if cpp_file.exists():
             content = cpp_file.read_text()
@@ -145,7 +145,7 @@ class TestCppPlugin:
     def test_plugin_integration_with_main_project(self):
         """Test that plugin integrates properly with main project."""
         # Check that plugin is referenced in RPM spec
-        spec_file = Path("prez-pkglog.spec")
+        spec_file = Path("plogr.spec")
 
         if spec_file.exists():
             spec_content = spec_file.read_text()

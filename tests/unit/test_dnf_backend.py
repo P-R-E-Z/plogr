@@ -2,7 +2,7 @@
 
 from unittest.mock import patch, MagicMock
 
-from src.prez_pkglog.backends.linux.dnf import DnfBackend
+from src.plogr.backends.linux.dnf import DnfBackend
 
 
 class TestDnfBackend:
@@ -12,7 +12,7 @@ class TestDnfBackend:
         """Test availability detection when DNF is available."""
         with (
             patch("shutil.which") as mock_which,
-            patch("src.prez_pkglog.backends.linux.dnf.dnf", MagicMock()),
+            patch("src.plogr.backends.linux.dnf.dnf", MagicMock()),
         ):
             mock_which.return_value = "/usr/bin/dnf"
             assert DnfBackend.is_available() is True
@@ -22,7 +22,7 @@ class TestDnfBackend:
         with (
             patch("shutil.which") as mock_which,
             patch("pathlib.Path.exists") as mock_exists,
-            patch("src.prez_pkglog.backends.linux.dnf.dnf", None),
+            patch("src.plogr.backends.linux.dnf.dnf", None),
         ):
             mock_which.return_value = None
             mock_exists.return_value = False
@@ -59,7 +59,7 @@ class TestDnfBackend:
         mock_dnf.Base.return_value.__exit__ = MagicMock(return_value=None)
 
         with (
-            patch("src.prez_pkglog.backends.linux.dnf.dnf", mock_dnf),
+            patch("src.plogr.backends.linux.dnf.dnf", mock_dnf),
             patch("shutil.which", return_value="/usr/bin/dnf"),
         ):
             backend = DnfBackend()
@@ -81,7 +81,7 @@ class TestDnfBackend:
         mock_dnf.Base.return_value.__exit__ = MagicMock(return_value=None)
 
         with (
-            patch("src.prez_pkglog.backends.linux.dnf.dnf", mock_dnf),
+            patch("src.plogr.backends.linux.dnf.dnf", mock_dnf),
             patch("shutil.which", return_value="/usr/bin/dnf"),
         ):
             backend = DnfBackend()
@@ -96,7 +96,7 @@ class TestDnfBackend:
         mock_dnf = MagicMock()
 
         with (
-            patch("src.prez_pkglog.backends.linux.dnf.dnf", mock_dnf),
+            patch("src.plogr.backends.linux.dnf.dnf", mock_dnf),
             patch("shutil.which", return_value="/usr/bin/dnf"),
         ):
             backend = DnfBackend()
@@ -120,7 +120,7 @@ class TestDnfBackend:
         mock_dnf = MagicMock()
 
         with (
-            patch("src.prez_pkglog.backends.linux.dnf.dnf", mock_dnf),
+            patch("src.plogr.backends.linux.dnf.dnf", mock_dnf),
             patch("shutil.which", return_value="/usr/bin/dnf"),
         ):
             backend = DnfBackend()

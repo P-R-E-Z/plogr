@@ -3,7 +3,7 @@
 import subprocess
 from unittest.mock import patch, MagicMock
 
-from src.prez_pkglog.backends.linux.apt import AptBackend
+from src.plogr.backends.linux.apt import AptBackend
 
 
 class TestAptBackend:
@@ -187,7 +187,7 @@ class TestAptBackend:
         with patch("shutil.which", return_value="/usr/bin/dpkg"):
             backend = AptBackend()
 
-            with patch("src.prez_pkglog.backends.linux.apt.logger") as mock_logger:
+            with patch("src.plogr.backends.linux.apt.logger") as mock_logger:
                 result = backend.register_transaction(None)
 
                 assert result is False
@@ -205,7 +205,7 @@ class TestAptBackend:
             mock_transaction.install_set = ["package1", "package2"]
             mock_transaction.remove_set = ["package3"]
 
-            with patch("src.prez_pkglog.backends.linux.apt.logger") as mock_logger:
+            with patch("src.plogr.backends.linux.apt.logger") as mock_logger:
                 result = backend.register_transaction(mock_transaction)
 
                 assert result is False
@@ -217,7 +217,7 @@ class TestAptBackend:
 
     def test_backend_inheritance(self):
         """Test that AptBackend inherits from PackageBackend."""
-        from src.prez_pkglog.backends.base import PackageBackend
+        from src.plogr.backends.base import PackageBackend
 
         with patch("shutil.which", return_value="/usr/bin/dpkg"):
             backend = AptBackend()
@@ -289,7 +289,7 @@ class TestAptBackend:
 
             with (
                 patch("subprocess.run") as mock_run,
-                patch("src.prez_pkglog.backends.linux.apt.logger") as mock_logger,
+                patch("src.plogr.backends.linux.apt.logger") as mock_logger,
             ):
                 mock_run.side_effect = OSError("System error")
 

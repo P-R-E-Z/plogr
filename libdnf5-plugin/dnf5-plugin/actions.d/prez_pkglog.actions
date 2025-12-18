@@ -1,2 +1,0 @@
-post_transaction:*:in::/usr/bin/prez-pkglog install --scope system "${pkg.name}" dnf
-post_transaction:*:out::/usr/bin/prez-pkglog remove --scope system "${pkg.name}" dnf 

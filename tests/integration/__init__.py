@@ -1,1 +1,1 @@
-"""Integration tests for prez-pkglog."""
+"""Integration tests for plogr."""

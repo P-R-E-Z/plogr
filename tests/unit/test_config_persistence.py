@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from src.prez_pkglog.config import Config
+from src.plogr.config import Config
 
 
 class TestConfigPersistence:
@@ -46,7 +46,7 @@ class TestConfigPersistence:
 
         # Patch Path.open to raise OSError to simulate disk failure
         with patch("pathlib.Path.open", side_effect=OSError("disk full")):
-            with patch("src.prez_pkglog.config.logger") as mock_logger:
+            with patch("src.plogr.config.logger") as mock_logger:
                 cfg.save()
                 mock_logger.warning.assert_called()
 
@@ -61,12 +61,12 @@ class TestCLIScopePersistence:
     def test_cli_commands_call_save(self, command, tmp_path, monkeypatch):
         """Each CLI command should invoke Config.save() after setting scope."""
         from click.testing import CliRunner
-        from src.prez_pkglog.cli import cli
+        from src.plogr.cli import cli
 
         # Patch underlying Config class so that calls inside CLI pick up mock
         with (
-            patch("src.prez_pkglog.config.Config") as mock_cfg_cls,
-            patch("src.prez_pkglog.logger.PackageLogger"),
+            patch("src.plogr.config.Config") as mock_cfg_cls,
+            patch("src.plogr.logger.PackageLogger"),
         ):
             cfg_instance = MagicMock()
             mock_cfg_cls.return_value = cfg_instance
@@ -88,7 +88,7 @@ class TestCLIScopePersistence:
 
             extra_patches = []
             if command == "daemon":
-                extra_patches.append(patch("src.prez_pkglog.monitors.downloads.DownloadsMonitor"))
+                extra_patches.append(patch("src.plogr.monitors.downloads.DownloadsMonitor"))
                 extra_patches.append(patch("time.sleep", side_effect=KeyboardInterrupt))
 
             with contextlib.ExitStack() as stack:

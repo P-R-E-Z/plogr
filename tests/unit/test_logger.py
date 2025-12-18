@@ -4,8 +4,8 @@ import json
 from unittest.mock import patch
 
 
-from src.prez_pkglog.logger import PackageLogger
-from src.prez_pkglog.config import Config
+from src.plogr.logger import PackageLogger
+from src.plogr.config import Config
 
 
 class TestPackageLogger:
@@ -19,7 +19,7 @@ class TestPackageLogger:
         logger = PackageLogger(config)
 
         assert logger.config.scope == "user"
-        assert "prez-pkglog" in str(logger.data_dir)
+        assert "plogr" in str(logger.data_dir)
 
     def test_init_system_scope(self):
         """Test logger initialization with system scope."""
@@ -36,7 +36,7 @@ class TestPackageLogger:
             logger = PackageLogger(config)
 
             assert logger.config.scope == "system"
-            assert "/var/log/prez-pkglog" in str(logger.data_dir)
+            assert "/var/log/plogr" in str(logger.data_dir)
             mock_mkdir.assert_called_once()
             mock_chmod.assert_called()
             mock_write.assert_called()

@@ -1,6 +1,6 @@
-# Contributing to prez-pkglog
+# Contributing to plogr
 
-Welcome! This guide helps you contribute to prez-pkglog. Don't worry if you're new, this will guide you through everything step by step.
+Welcome! This guide helps you contribute to plogr. Don't worry if you're new, this will guide you through everything step by step.
 
 <details>
 <summary><strong> Quick Start</strong></summary>
@@ -49,14 +49,14 @@ Welcome! This guide helps you contribute to prez-pkglog. Don't worry if you're n
 2. Clone your fork locally:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/prez-pkglog.git
-   cd prez-pkglog
+   git clone https://github.com/YOUR_USERNAME/plogr.git
+   cd plogr
    ```
 
 3. Add the upstream repository:
 
    ```bash
-   git remote add upstream https://github.com/P-R-E-Z/prez-pkglog.git
+   git remote add upstream https://github.com/P-R-E-Z/plogr.git
    ```
 
 </details>
@@ -186,7 +186,7 @@ pytest
 pytest tests/backends/test_dnf.py
 
 # Run with coverage
-pytest --cov=src/prez_pkglog
+pytest --cov=src/plogr
 
 # Run linting
 ruff check src/
@@ -294,7 +294,7 @@ Before submitting your pull request, ensure:
 
 ### Backend Structure
 
-Backends are located in `src/prez_pkglog/backends/` under their respective operating system directory (`linux/`, `macos/`, or `windows/`). For example, the APT backend should be located at `src/prez_pkglog/backends/linux/apt.py`.
+Backends are located in `src/plogr/backends/` under their respective operating system directory (`linux/`, `macos/`, or `windows/`). For example, the APT backend should be located at `src/plogr/backends/linux/apt.py`.
 
 Each backend must inherit from `PackageBackend` and implement the required methods. The application will automatically discover and load any valid backend from these directories at runtime.
 
@@ -303,15 +303,15 @@ Each backend must inherit from `PackageBackend` and implement the required metho
 Different package managers require different setup approaches for automatic logging:
 
 #### APT (Debian/Ubuntu)
-Create a file at `/etc/apt/apt.conf.d/99prez-pkglog` with:
+Create a file at `/etc/apt/apt.conf.d/99plogr` with:
 ```
 DPkg::Post-Invoke {
-    "if [ -x /usr/local/bin/prez-pkglog-apt ]; then /usr/local/bin/prez-pkglog-apt; fi";
+    "if [ -x /usr/local/bin/plogr-apt ]; then /usr/local/bin/plogr-apt; fi";
 };
 ```
 
 #### Pacman (Arch Linux)
-Create a hook file at `/etc/pacman.d/hooks/prez-pkglog.hook` with:
+Create a hook file at `/etc/pacman.d/hooks/plogr.hook` with:
 ```ini
 [Trigger]
 Operation = Install
@@ -321,9 +321,9 @@ Type = Package
 Target = *
 
 [Action]
-Description = Log package transaction with prez-pkglog
+Description = Log package transaction with plogr
 When = PostTransaction
-Exec = /usr/bin/prez-pkglog-pacman
+Exec = /usr/bin/plogr-pacman
 ```
 
 #### Homebrew (macOS)
@@ -333,7 +333,7 @@ function brew() {
     case "$1" in
         install|uninstall|reinstall|upgrade)
             command brew "$@"
-            /usr/local/bin/prez-pkglog-brew-hook
+            /usr/local/bin/plogr-brew-hook
             ;;
         *)
             command brew "$@"
@@ -343,7 +343,7 @@ function brew() {
 ```
 
 #### Chocolatey (Windows)
-Create PowerShell scripts in `$env:ChocolateyInstall\hooks` (e.g., `pre-install.ps1`, `post-uninstall.ps1`) that call the `prez-pkglog` CLI.
+Create PowerShell scripts in `$env:ChocolateyInstall\hooks` (e.g., `pre-install.ps1`, `post-uninstall.ps1`) that call the `plogr` CLI.
 
 #### Winget (Windows)
 Winget doesn't have hooks, so implement logging by either:
@@ -355,7 +355,7 @@ Winget doesn't have hooks, so implement logging by either:
 Here is a generic template for a new backend:
 
 ```python
-# src/prez_pkglog/backends/linux/example.py
+# src/plogr/backends/linux/example.py
 from __future__ import annotations
 
 import shutil
@@ -487,7 +487,7 @@ Create tests for your new backend in the corresponding `tests/` directory (e.g.,
 ```python
 import pytest
 from unittest.mock import patch, MagicMock
-from src.prez_pkglog.backends.example import ExampleBackend
+from src.plogr.backends.example import ExampleBackend
 
 class TestExampleBackend:
     def test_is_available(self):
@@ -557,9 +557,9 @@ sudo make install
 
 #### Plugin Structure
 
-- `libdnf5-plugin/dnf5-plugin/src/prez_pkglog_plugin.cpp` - Main plugin implementation (minimal loader)
+- `libdnf5-plugin/dnf5-plugin/src/plogr_plugin.cpp` - Main plugin implementation (minimal loader)
 - `libdnf5-plugin/dnf5-plugin/CMakeLists.txt` - Build configuration
-- `libdnf5-plugin/dnf5-plugin/actions.d/prez_pkglog.actions` - Actions Plugin hooks for transaction logging
+- `libdnf5-plugin/dnf5-plugin/actions.d/plogr.actions` - Actions Plugin hooks for transaction logging
 
 The plugin uses the DNF5 Actions Plugin system for actual transaction logging rather than direct C++ hooks.
 
@@ -573,15 +573,15 @@ dnf5 --version
 sudo dnf5 install test-package
 
 # Verify transactions are logged
-sudo prez-pkglog status
+sudo plogr status
 ```
 
 #### Scope Management
 
-The DNF integration respects prez-pkglog's scope configuration:
-- System scope (`/etc/prez-pkglog/`) takes precedence over user scope (`~/.config/prez-pkglog/`)
+The DNF integration respects plogr's scope configuration:
+- System scope (`/etc/plogr/`) takes precedence over user scope (`~/.config/plogr/`)
 - Configuration files are automatically detected and prioritized
-- Use `sudo prez-pkglog setup` to configure system scope properly
+- Use `sudo plogr setup` to configure system scope properly
 
 </details>
 
@@ -592,10 +592,10 @@ Supporting a new platform or distribution involves two main steps: ensuring the 
 
 ### Platform Detection
 
-Platform-specific logic is handled in `src/prez_pkglog/utils/platform.py`. If you are adding a new Linux distribution or operating system, you may need to update the `detect_platform()` function to recognize it.
+Platform-specific logic is handled in `src/plogr/utils/platform.py`. If you are adding a new Linux distribution or operating system, you may need to update the `detect_platform()` function to recognize it.
 
 ```python
-# src/prez_pkglog/utils/platform.py
+# src/plogr/utils/platform.py
 
 def detect_platform() -> str:
     """Detect the current platform"""
@@ -608,7 +608,7 @@ You may also need to add platform-specific paths in `get_platform_specific_paths
 
 ### Packaging
 
-To make it easier for users to install `prez-pkglog` on other systems, I encourage contributions of packaging templates. These should be placed in the `packaging/` directory, in a subdirectory named after the distribution (e.g., `packaging/suse/`).
+To make it easier for users to install `plogr` on other systems, I encourage contributions of packaging templates. These should be placed in the `packaging/` directory, in a subdirectory named after the distribution (e.g., `packaging/suse/`).
 
 I have existing examples for Arch Linux (`packaging/archlinux/`) and Debian (`packaging/debian/`) that can be used as a reference. These templates provide a starting point for creating native packages (`.pkg.tar.zst`, `.deb`, etc.) and setting up any necessary hooks for the native package manager.
 
@@ -626,7 +626,7 @@ A good packaging contribution includes:
 ### Version Bumping
 
 All version bumps are performed with **bump2version**. The tool updates
-`pyproject.toml`, `prez-pkglog.spec`, `CHANGELOG.md`, and any other version
+`pyproject.toml`, `plogr.spec`, `CHANGELOG.md`, and any other version
 strings, then creates an annotated Git tag.
 
 The `make release v=patch|minor|major` target automates the entire process:
@@ -737,8 +737,8 @@ make test    # Ensure tests pass
 - **Push fails**: Check that you have write access to the repository
 
 #### DNF Integration Issues
-- **Actions Plugin not working**: Check that `/usr/share/libdnf5/plugins/actions.d/prez_pkglog.actions` has no trailing characters or extra whitespace
-- **Scope detection problems**: Verify that system config at `/etc/prez-pkglog/` takes precedence over user config at `~/.config/prez-pkglog/`
+- **Actions Plugin not working**: Check that `/usr/share/libdnf5/plugins/actions.d/plogr.actions` has no trailing characters or extra whitespace
+- **Scope detection problems**: Verify that system config at `/etc/plogr/` takes precedence over user config at `~/.config/plogr/`
 - **Conditional imports failing**: Use `try/except ImportError` patterns and `dnf.Plugin if dnf else object` inheritance
 - **Setup command issues**: Ensure Click option decorators are properly mapped to function parameters
 
@@ -756,4 +756,4 @@ I welcome contributors from all backgrounds and experience levels.
 
 ---
 
-Thank you for contributing to prez-pkglog
+Thank you for contributing to plogr

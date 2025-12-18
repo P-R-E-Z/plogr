@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from src.prez_pkglog.monitors.downloads import DownloadsMonitor, DownloadsEventHandler
+from src.plogr.monitors.downloads import DownloadsMonitor, DownloadsEventHandler
 
 
 class TestDownloadsMonitor:
@@ -26,7 +26,7 @@ class TestDownloadsMonitor:
         with pytest.raises(ValueError, match="logger_instance must be provided"):
             DownloadsMonitor(None)
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", True)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", True)
     def test_downloads_monitor_start_success(self):
         """Test starting downloads monitor successfully."""
         mock_logger = MagicMock()
@@ -35,7 +35,7 @@ class TestDownloadsMonitor:
         mock_logger.config = mock_config
 
         with (
-            patch("src.prez_pkglog.monitors.downloads.Observer") as mock_observer_class,
+            patch("src.plogr.monitors.downloads.Observer") as mock_observer_class,
             patch("pathlib.Path.exists", return_value=True),
         ):
             mock_observer = MagicMock()
@@ -47,7 +47,7 @@ class TestDownloadsMonitor:
             mock_observer.schedule.assert_called_once()
             mock_observer.start.assert_called_once()
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", False)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", False)
     def test_downloads_monitor_start_no_watchdog(self):
         """Test starting monitor without watchdog library."""
         mock_logger = MagicMock()
@@ -60,7 +60,7 @@ class TestDownloadsMonitor:
 
         # Should not crash, just log warning
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", True)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", True)
     def test_downloads_monitor_start_missing_directory(self):
         """Test starting monitor with missing downloads directory."""
         mock_logger = MagicMock()
@@ -324,27 +324,27 @@ class TestHooksIntegration:
 
     def test_plugin_file_exists(self):
         """Test that plugin files exist in correct locations."""
-        plugin_file = Path("src/prez_pkglog/hooks/dnf/plugin.py")
+        plugin_file = Path("src/plogr/hooks/dnf/plugin.py")
         assert plugin_file.exists(), "DNF plugin file should exist"
 
-        downloads_file = Path("src/prez_pkglog/monitors/downloads.py")
+        downloads_file = Path("src/plogr/monitors/downloads.py")
         assert downloads_file.exists(), "Downloads monitor file should exist"
 
     def test_plugin_imports(self):
         """Test that plugin has correct imports."""
-        plugin_file = Path("src/prez_pkglog/hooks/dnf/plugin.py")
+        plugin_file = Path("src/plogr/hooks/dnf/plugin.py")
 
         if plugin_file.exists():
             content = plugin_file.read_text()
 
             # Should import required modules
             assert "import dnf" in content
-            assert "from prez_pkglog.config import Config" in content
-            assert "from prez_pkglog.logger import PackageLogger" in content
+            assert "from plogr.config import Config" in content
+            assert "from plogr.logger import PackageLogger" in content
 
     def test_downloads_monitor_imports(self):
         """Test that downloads monitor has correct imports."""
-        downloads_file = Path("src/prez_pkglog/monitors/downloads.py")
+        downloads_file = Path("src/plogr/monitors/downloads.py")
 
         if downloads_file.exists():
             content = downloads_file.read_text()
@@ -355,13 +355,13 @@ class TestHooksIntegration:
 
     def test_hooks_directory_structure(self):
         """Test that hooks directory structure is correct."""
-        hooks_dir = Path("src/prez_pkglog/hooks")
+        hooks_dir = Path("src/plogr/hooks")
         assert hooks_dir.exists(), "Hooks directory should exist"
 
         dnf_hooks_dir = hooks_dir / "dnf"
         assert dnf_hooks_dir.exists(), "DNF hooks directory should exist"
 
-        monitors_dir = Path("src/prez_pkglog/monitors")
+        monitors_dir = Path("src/plogr/monitors")
         assert monitors_dir.exists(), "Monitors directory should exist"
 
     def test_libdnf5_plugin_structure(self):
@@ -375,36 +375,36 @@ class TestHooksIntegration:
         actions_dir = libdnf5_dir / "dnf5-plugin" / "actions.d"
         assert actions_dir.exists(), "actions.d directory should exist"
 
-        actions_file = actions_dir / "prez_pkglog.actions"
-        assert actions_file.exists(), "prez_pkglog.actions file should exist"
+        actions_file = actions_dir / "plogr.actions"
+        assert actions_file.exists(), "plogr.actions file should exist"
 
     def test_actions_file_content(self):
         """Test that actions file has correct content."""
-        actions_file = Path("libdnf5-plugin/dnf5-plugin/actions.d/prez_pkglog.actions")
+        actions_file = Path("libdnf5-plugin/dnf5-plugin/actions.d/plogr.actions")
 
         if actions_file.exists():
             content = actions_file.read_text()
 
             # Should contain post_transaction hooks
             assert "post_transaction:" in content
-            assert "prez-pkglog install" in content
-            assert "prez-pkglog remove" in content
+            assert "plogr install" in content
+            assert "plogr remove" in content
             assert "${pkg.name}" in content
 
 
 class TestWatchdogFallback:
     """Test watchdog fallback functionality."""
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", False)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", False)
     def test_fallback_classes_exist(self):
         """Test that fallback classes are available when watchdog is not installed."""
         # Re-import to trigger fallback
         import importlib
-        import src.prez_pkglog.monitors.downloads
+        import src.plogr.monitors.downloads
 
-        importlib.reload(src.prez_pkglog.monitors.downloads)
+        importlib.reload(src.plogr.monitors.downloads)
 
-        from src.prez_pkglog.monitors.downloads import FileSystemEventHandler, Observer
+        from src.plogr.monitors.downloads import FileSystemEventHandler, Observer
 
         # Should be able to instantiate fallback classes
         handler = FileSystemEventHandler()
@@ -417,16 +417,16 @@ class TestWatchdogFallback:
         observer.stop()
         observer.join()
 
-    @patch("src.prez_pkglog.monitors.downloads.WATCHDOG_AVAILABLE", True)
+    @patch("src.plogr.monitors.downloads.WATCHDOG_AVAILABLE", True)
     def test_real_watchdog_imports(self):
         """Test that real watchdog classes are used when available."""
         # Re-import to use real watchdog
         import importlib
-        import src.prez_pkglog.monitors.downloads
+        import src.plogr.monitors.downloads
 
-        importlib.reload(src.prez_pkglog.monitors.downloads)
+        importlib.reload(src.plogr.monitors.downloads)
 
         # Should not crash when watchdog is available
-        from src.prez_pkglog.monitors.downloads import WATCHDOG_AVAILABLE
+        from src.plogr.monitors.downloads import WATCHDOG_AVAILABLE
 
         assert WATCHDOG_AVAILABLE is True

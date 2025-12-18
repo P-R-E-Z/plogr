@@ -1,1 +1,1 @@
-"""Unit tests for prez-pkglog components."""
+"""Unit tests for plogr components."""

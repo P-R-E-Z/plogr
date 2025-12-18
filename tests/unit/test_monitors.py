@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.prez_pkglog.monitors.downloads import DownloadsMonitor, DownloadsEventHandler
+from src.plogr.monitors.downloads import DownloadsMonitor, DownloadsEventHandler
 
 
 class TestDownloadsMonitor:

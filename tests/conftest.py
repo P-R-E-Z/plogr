@@ -65,9 +65,9 @@ def mock_config():
 def mock_logger(tmp_path):
     """Mock logger with temporary directory."""
     logger = MagicMock()
-    logger.data_dir = tmp_path / "prez-pkglog"
-    logger.json_file = tmp_path / "prez-pkglog" / "packages.json"
-    logger.toml_file = tmp_path / "prez-pkglog" / "packages.toml"
+    logger.data_dir = tmp_path / "plogr"
+    logger.json_file = tmp_path / "plogr" / "packages.json"
+    logger.toml_file = tmp_path / "plogr" / "packages.toml"
     logger.get_statistics.return_value = {
         "total": 3,
         "installed": 2,

@@ -2,9 +2,9 @@
 
 from unittest.mock import MagicMock
 
-from src.prez_pkglog.backends.base import PackageBackend
-from src.prez_pkglog import backends
-from src.prez_pkglog import (
+from src.plogr.backends.base import PackageBackend
+from src.plogr import backends
+from src.plogr import (
     register_backend,
     get_backend,
     detect_available_backends,
@@ -373,8 +373,8 @@ class TestDetectAvailableBackends:
         assert "unavailable-backend" not in available
         assert isinstance(available["available-backend"], AvailableBackend)
 
-    def test_detect_available_backends_with_config(self):
-        """Test detecting available backends with config parameter."""
+    def test_detect_available_backends_with_config_and_logger(self):
+        """Test detecting available backends with config/logger parameters."""
 
         class ConfigurableBackend(PackageBackend):
             name = "configurable-backend"
@@ -382,6 +382,7 @@ class TestDetectAvailableBackends:
             def __init__(self, config=None):
                 super().__init__(config)
                 self.test_config = config
+                self.logger = None
 
             @classmethod
             def is_available(cls):
@@ -397,11 +398,13 @@ class TestDetectAvailableBackends:
         register_backend("configurable-backend", ConfigurableBackend)
 
         mock_config = MagicMock()
-        available = detect_available_backends(config=mock_config)
+        mock_logger = MagicMock()
+        available = detect_available_backends(config=mock_config, logger=mock_logger)
 
         assert len(available) == 1
         backend = available["configurable-backend"]
         assert backend.test_config is mock_config  # type: ignore
+        assert backend.logger is mock_logger  # type: ignore[attr-defined]
 
     def test_detect_available_backends_return_type(self):
         """Test that detect_available_backends returns correct type."""

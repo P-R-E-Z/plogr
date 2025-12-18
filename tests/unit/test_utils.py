@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch, call
 import pytest
 
-from src.prez_pkglog.utils import (
+from src.plogr.utils import (
     performance_monitor,
     cache_result,
     PerformanceTracker,
@@ -25,7 +25,7 @@ class TestPerformanceMonitor:
             time.sleep(0.01)
             return "test_result"
 
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             result = test_function()
 
             assert result == "test_result"
@@ -42,7 +42,7 @@ class TestPerformanceMonitor:
             time.sleep(0.01)
             raise ValueError("Test error")
 
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             with pytest.raises(ValueError, match="Test error"):
                 failing_function()
 
@@ -58,7 +58,7 @@ class TestPerformanceMonitor:
         def function_with_args(a, b, c=None):
             return f"{a}-{b}-{c}"
 
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             result = function_with_args("arg1", "arg2", c="kwarg")
 
             assert result == "arg1-arg2-kwarg"
@@ -192,7 +192,7 @@ class TestPerformanceTracker:
 
     def test_performance_tracker_basic_usage(self):
         """Test basic PerformanceTracker usage."""
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             with PerformanceTracker("test_operation"):
                 time.sleep(0.01)
 
@@ -203,7 +203,7 @@ class TestPerformanceTracker:
 
     def test_performance_tracker_with_exception(self):
         """Test PerformanceTracker when exception occurs in context."""
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             with pytest.raises(ValueError, match="Test error"):
                 with PerformanceTracker("failing_operation"):
                     time.sleep(0.01)
@@ -230,13 +230,13 @@ class TestPerformanceTracker:
         assert tracker.start_time is not None
 
         # Test __exit__
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             tracker.__exit__(None, None, None)
             mock_logger.debug.assert_called_once()
 
     def test_performance_tracker_multiple_operations(self):
         """Test multiple PerformanceTracker operations."""
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             with PerformanceTracker("operation1"):
                 time.sleep(0.005)
 
@@ -293,7 +293,7 @@ class TestOptimizeFileOperations:
             call_count += 1
             raise IOError("Persistent file error")
 
-        with patch("src.prez_pkglog.utils.logger") as mock_logger:
+        with patch("src.plogr.utils.logger") as mock_logger:
             with pytest.raises(IOError, match="Persistent file error"):
                 optimize_file_operations("/test/path", always_failing_operation)
 
